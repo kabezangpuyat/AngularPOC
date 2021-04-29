@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using MNV.Domain.Models.Authentication;
 using MNV.Commands.Authentication;
 using MNV.Domain.Models.Responses.Authentication;
+using MNV.Domain.Constants;
 
 namespace MNV.Web.Controllers
 {
@@ -67,6 +68,15 @@ namespace MNV.Web.Controllers
             }
 
             return Ok(new { valid = valid });
+        }
+
+        [HttpPost("register"), AllowAnonymous]
+        public async Task<IActionResult> RegisterGuest(CreateUserRequest model)
+        {
+            model.RoleId = RoleConstants.Guest;
+            var command = new CreateUser.Command { CreateUserRequest = model };
+            return await ExecuteCommand(command)
+                .ConfigureAwait(false);
         }
         #endregion
 

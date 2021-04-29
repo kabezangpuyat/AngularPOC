@@ -27,6 +27,7 @@ using MNV.Infrastructure.Services;
 using MNV.Core.Providers;
 using MNV.Infrastructure.Providers;
 using System.Reflection;
+using MNV.Core.Services.Test;
 
 namespace MNV.Web
 {
@@ -45,6 +46,17 @@ namespace MNV.Web
             services.AddControllers();
             services.AddControllers();
 
+            #region Cors
+            //string allowedUrls = Configuration.GetSection("AllowedUrls").Get<string>();
+            //string[] origins = allowedUrls.Split(new string[] { "," }, StringSplitOptions.None);
+            services.AddCors(options=> {
+                options.AddPolicy("MNVCors",
+                    builder => builder.AllowAnyOrigin()
+                                     .AllowAnyMethod()
+                                     .AllowAnyHeader());
+            });
+
+            #endregion
 
             services.Configure<AppSettings>(Configuration.GetSection(ConfigurationConstants.AppSettings));
 
@@ -113,6 +125,7 @@ namespace MNV.Web
             services.AddTransient<IEncryptionService, EncryptionService>();
             services.AddTransient<IAuthenticationService, AuthenticationService>();
             services.AddTransient<ICurrentUserProvider, CurrentUserProvider>();
+            services.AddTransient<ITestService, TestService>();
             #endregion
 
             #region Mediator
@@ -150,14 +163,22 @@ namespace MNV.Web
             app.UseStaticFiles();
 
             string allowedUrls = Configuration.GetSection("AllowedUrls").Get<string>();
-            string[] origins = allowedUrls.Split(new string[] { "," }, StringSplitOptions.None); 
+            string[] origins = allowedUrls.Split(new string[] { "," }, StringSplitOptions.None);
             app.UseRouting();
             app.UseAuthentication();
-            app.UseCors(builder => builder
-              .WithOrigins(origins)
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials());
+            app.UseCors("MNVCors");
+            //app.UseCors(builder => builder
+            //  //.WithOrigins(origins)
+            //  .AllowAnyOrigin()
+            //  .AllowAnyMethod()
+            //  .AllowAnyHeader()
+            //  .AllowCredentials());
+            //app.Use(async (context, next) =>
+            //{
+            //    context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            //    await next.Invoke();
+            //});
+
 
             app.UseAuthorization();
 
